@@ -16,6 +16,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // ── Injection de dépendances ──────────────────────────────────────────────────
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IProjectService, ProjectService>();
+builder.Services.AddScoped<ITaskService, TaskService>();
 
 // ── JWT ───────────────────────────────────────────────────────────────────────
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
@@ -41,7 +43,6 @@ builder.Services.AddAuthentication(options =>
         ClockSkew = TimeSpan.Zero
     };
 
-    // Réponse JSON propre pour les 401
     options.Events = new JwtBearerEvents
     {
         OnChallenge = async context =>
@@ -73,7 +74,6 @@ builder.Services.AddSwaggerGen(options =>
                       "Obtenez un token via **/api/users/login** puis cliquez sur **Authorize**."
     });
 
-    // Bouton Authorize dans Swagger UI
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -103,7 +103,6 @@ builder.Services.AddSwaggerGen(options =>
 // ── Build ─────────────────────────────────────────────────────────────────────
 var app = builder.Build();
 
-// Middleware erreurs (en premier !)
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())
@@ -112,7 +111,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "TaskFlow API v1");
-        c.RoutePrefix = string.Empty; // Swagger à la racine
+        c.RoutePrefix = string.Empty;
     });
 }
 
