@@ -37,10 +37,16 @@ public class ProjectsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(ProjectDto dto)
     {
-        var userId = int.Parse(User.FindFirst("id")?.Value ?? "0");
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)
+                       ?? User.FindFirst("sub");
+
+        if (userIdClaim == null)
+            return Unauthorized();
+
+        var userId = int.Parse(userIdClaim.Value);
 
         var project = await _service.CreateProject(dto, userId);
-        return CreatedAtAction(nameof(GetById), new { id = 1 }, project);
+        return CreatedAtAction(nameof(GetById), new { id = ((dynamic)project).Id }, project);
     }
 
     // PUT
